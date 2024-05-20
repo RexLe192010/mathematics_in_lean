@@ -6,7 +6,7 @@ set_option autoImplicit true
 namespace C03S02
 
 example : ∃ x : ℝ, 2 < x ∧ x < 3 := by
-  use 5 / 2
+  use 5 / 2 -- use 2.5 as one solution to x
   norm_num
 
 example : ∃ x : ℝ, 2 < x ∧ x < 3 := by
@@ -31,7 +31,7 @@ def FnUb (f : ℝ → ℝ) (a : ℝ) : Prop :=
 def FnLb (f : ℝ → ℝ) (a : ℝ) : Prop :=
   ∀ x, a ≤ f x
 
-def FnHasUb (f : ℝ → ℝ) :=
+def FnHasUb (f : ℝ → ℝ) := -- the function has an upper bound without specifying the bound
   ∃ a, FnUb f a
 
 def FnHasLb (f : ℝ → ℝ) :=
@@ -39,6 +39,10 @@ def FnHasLb (f : ℝ → ℝ) :=
 
 theorem fnUb_add {f g : ℝ → ℝ} {a b : ℝ} (hfa : FnUb f a) (hgb : FnUb g b) :
     FnUb (fun x ↦ f x + g x) (a + b) :=
+  fun x ↦ add_le_add (hfa x) (hgb x)
+
+theorem fnLb_add {f g : ℝ → ℝ} {a b : ℝ} (hfa : FnLb f a) (hgb : FnLb g b) :
+    FnLb (fun x ↦ f x + g x) (a + b) :=
   fun x ↦ add_le_add (hfa x) (hgb x)
 
 section
@@ -52,13 +56,20 @@ example (ubf : FnHasUb f) (ubg : FnHasUb g) : FnHasUb fun x ↦ f x + g x := by
   apply fnUb_add ubfa ubgb
 
 example (lbf : FnHasLb f) (lbg : FnHasLb g) : FnHasLb fun x ↦ f x + g x := by
-  sorry
+  rcases lbf with ⟨a, lbfa⟩
+  rcases lbg with ⟨b, lbgb⟩
+  use a + b
+  apply fnLb_add lbfa lbgb
 
 example {c : ℝ} (ubf : FnHasUb f) (h : c ≥ 0) : FnHasUb fun x ↦ c * f x := by
-  sorry
+  rcases ubf with ⟨a, ubfa⟩
+  use c * a
+  intro x
+  apply mul_le_mul_of_nonneg_left (ubfa x)
+  apply h
 
 example : FnHasUb f → FnHasUb g → FnHasUb fun x ↦ f x + g x := by
-  rintro ⟨a, ubfa⟩ ⟨b, ubgb⟩
+  rintro ⟨a, ubfa⟩ ⟨b, ubgb⟩ -- rintro is the combination of rcases and intro
   exact ⟨a + b, fnUb_add ubfa ubgb⟩
 
 example : FnHasUb f → FnHasUb g → FnHasUb fun x ↦ f x + g x :=
@@ -126,10 +137,15 @@ example (divab : a ∣ b) (divbc : b ∣ c) : a ∣ c := by
   rcases divab with ⟨d, beq⟩
   rcases divbc with ⟨e, ceq⟩
   rw [ceq, beq]
-  use d * e; ring
+  use d * e
+  ring
 
 example (divab : a ∣ b) (divac : a ∣ c) : a ∣ b + c := by
-  sorry
+  rcases divab with ⟨d, beq⟩
+  rcases divac with ⟨e, ceq⟩
+  rw [beq, ceq]
+  use d + e
+  ring
 
 end
 
@@ -140,10 +156,26 @@ open Function
 example {c : ℝ} : Surjective fun x ↦ x + c := by
   intro x
   use x - c
-  dsimp; ring
+  dsimp
+  ring
 
 example {c : ℝ} (h : c ≠ 0) : Surjective fun x ↦ c * x := by
-  sorry
+  intro x
+  use x / c
+  dsimp
+  ring_nf
+  rw [mul_comm]
+  rw [← mul_assoc]
+  rw [inv_mul_cancel]
+  rw [one_mul]
+  apply h
+
+example {c : ℝ} (h : c ≠ 0) : Surjective fun x ↦ c * x := by -- same, but using mul_div_cancel₀
+  intro x
+  use x / c
+  dsimp
+  apply mul_div_cancel₀
+  apply h
 
 example (x y : ℝ) (h : x - y ≠ 0) : (x ^ 2 - y ^ 2) / (x - y) = x + y := by
   field_simp [h]
@@ -163,6 +195,9 @@ variable {α : Type*} {β : Type*} {γ : Type*}
 variable {g : β → γ} {f : α → β}
 
 example (surjg : Surjective g) (surjf : Surjective f) : Surjective fun x ↦ g (f x) := by
-  sorry
+  intro z
+  rcases surjg z with ⟨y, rfl⟩ -- exist y such that g(y) = z
+  rcases surjf y with ⟨x, rfl⟩ -- exist x such that f(x) = y
+  use x -- use x such that g(f(x)) = z
 
 end
