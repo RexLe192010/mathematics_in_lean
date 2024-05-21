@@ -45,7 +45,14 @@ example : s ∩ (t ∪ u) ⊆ s ∩ t ∪ s ∩ u := by
   . right; exact ⟨xs, xu⟩
 
 example : s ∩ t ∪ s ∩ u ⊆ s ∩ (t ∪ u) := by
-  sorry
+  rintro x (⟨xs, xt⟩ | ⟨xs, xu⟩)
+  constructor
+  · exact xs
+  · exact mem_union_left u xt
+  constructor
+  · exact xs
+  · exact mem_union_right t xu
+
 example : (s \ t) \ u ⊆ s \ (t ∪ u) := by
   intro x xstu
   have xs : x ∈ s := xstu.1.1
@@ -65,7 +72,16 @@ example : (s \ t) \ u ⊆ s \ (t ∪ u) := by
   rintro (xt | xu) <;> contradiction
 
 example : s \ (t ∪ u) ⊆ (s \ t) \ u := by
-  sorry
+  intro x xstu
+  have xs : x ∈ s := xstu.1
+  have xntu : x ∉ (t ∪ u) := xstu.2
+  constructor
+  · use xs
+    intro xt
+    exact xntu (Or.inl xt)
+  · intro xu
+    exact xntu (Or.inr xu)
+
 example : s ∩ t = t ∩ s := by
   ext x
   simp only [mem_inter_iff]
@@ -84,18 +100,70 @@ example : s ∩ t = t ∩ s := by
   . rintro x ⟨xt, xs⟩; exact ⟨xs, xt⟩
 
 example : s ∩ t = t ∩ s :=
-    Subset.antisymm sorry sorry
+    Subset.antisymm
+    (fun x ⟨xs, xt⟩ ↦ ⟨xt, xs⟩) -- x in s and x in t ↦ x in t and x in s
+    fun x ⟨xt, xs⟩ ↦ ⟨xs, xt⟩ -- x in t and x in s ↦ x in s and x in t
+
 example : s ∩ (s ∪ t) = s := by
-  sorry
+  apply Subset.antisymm
+  intro x xsst
+  exact xsst.1
+  intro y ys
+  constructor
+  · exact ys
+  · exact mem_union_left t ys
+
 
 example : s ∪ s ∩ t = s := by
-  sorry
+  apply Subset.antisymm
+  · rintro x (xs | xsst)
+    exact xs
+    exact xsst.1
+  · intro y ys
+    left
+    exact ys
 
 example : s \ t ∪ t = s ∪ t := by
-  sorry
+ext x
+constructor
+· rintro (⟨xs, xnt⟩ | xt)
+  exact mem_union_left t xs
+  exact mem_union_right s xt
+· by_cases h : x ∈ t
+  · intro
+    right
+    exact h
+  · rintro (xs | xt)
+    left
+    use xs
+    right
+    exact xt
+
 
 example : s \ t ∪ t \ s = (s ∪ t) \ (s ∩ t) := by
-  sorry
+  ext x
+  constructor
+  · rintro (⟨xs, xnt⟩ | ⟨xt, xns⟩)
+    constructor
+    · exact mem_union_left t xs
+    · rintro ⟨_ , xt⟩
+      contradiction
+    constructor
+    · exact mem_union_right s xt
+    · rintro ⟨xs, _⟩
+      contradiction
+  · rintro ⟨xs | xt, nxst⟩
+    left
+    · use xs
+      intro xt
+      apply nxst
+      exact mem_inter xs xt
+    right
+    · use xt
+      intro xs
+      apply nxst
+      exact mem_inter xs xt
+
 
 def evens : Set ℕ :=
   { n | Even n }
@@ -116,7 +184,17 @@ example (x : ℕ) : x ∈ (univ : Set ℕ) :=
   trivial
 
 example : { n | Nat.Prime n } ∩ { n | n > 2 } ⊆ { n | ¬Even n } := by
-  sorry
+  intro n
+  simp
+  intro nprime
+  rcases Nat.Prime.eq_two_or_odd nprime with h | h
+  · rw [h]
+    intro
+    trivial
+  · rw [Nat.even_iff]
+    intro
+    exact Nat.mod_two_ne_zero.mpr h
+
 
 #print Prime
 
@@ -152,10 +230,19 @@ section
 variable (ssubt : s ⊆ t)
 
 example (h₀ : ∀ x ∈ t, ¬Even x) (h₁ : ∀ x ∈ t, Prime x) : ∀ x ∈ s, ¬Even x ∧ Prime x := by
-  sorry
+  intro x xs
+  have xt : x ∈ t := by exact ssubt xs
+  constructor
+  · apply h₀
+    exact xt
+  · apply h₁
+    exact xt
+
 
 example (h : ∃ x ∈ s, ¬Even x ∧ Prime x) : ∃ x ∈ t, Prime x := by
-  sorry
+  rcases h with ⟨x, xs, _, prime_x⟩
+  have xt : x ∈ t := by exact ssubt xs
+  use x
 
 end
 
@@ -194,7 +281,28 @@ example : (⋂ i, A i ∩ B i) = (⋂ i, A i) ∩ ⋂ i, B i := by
 
 
 example : (s ∪ ⋂ i, A i) = ⋂ i, A i ∪ s := by
-  sorry
+  ext x
+  simp only [mem_union, mem_iInter]
+  constructor
+  · rintro (xs | xAi)
+    intro i
+    right
+    exact xs
+    intro i
+    left
+    exact xAi i
+  · intro h
+    by_cases xs : x ∈ s
+    · left
+      exact xs
+    · right
+      intro i
+      cases h i
+      · assumption
+      contradiction
+
+
+
 
 def primes : Set ℕ :=
   { x | Nat.Prime x }
@@ -215,7 +323,14 @@ example : (⋂ p ∈ primes, { x | ¬p ∣ x }) ⊆ { x | x = 1 } := by
   apply Nat.exists_prime_and_dvd
 
 example : (⋃ p ∈ primes, { x | x ≤ p }) = univ := by
-  sorry
+  apply eq_univ_of_forall
+  simp
+  intro x
+  rcases Nat.exists_infinite_primes x with ⟨p, prime, pge⟩
+  use p
+  constructor
+  · exact pge
+  · exact prime
 
 end
 
@@ -223,7 +338,7 @@ section
 
 open Set
 
-variable {α : Type*} (s : Set (Set α))
+variable {α : Type*} (s : Set (Set α)) -- set of sets
 
 example : ⋃₀ s = ⋃ t ∈ s, t := by
   ext x
@@ -236,4 +351,3 @@ example : ⋂₀ s = ⋂ t ∈ s, t := by
   rfl
 
 end
-
