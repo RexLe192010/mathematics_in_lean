@@ -31,7 +31,7 @@ theorem convergesTo_add {s t : ℕ → ℝ} {a b : ℝ}
       ring
     _ ≤ |s n - a| + |t n - b| := (abs_add _ _)
     _ < ε / 2 + ε / 2 := (add_lt_add (hs n ngeNs) (ht n ngeNt))
-    _ = ε := by norm_num
+    _ = ε := by linarith
 
 theorem convergesTo_mul_const {s : ℕ → ℝ} {a : ℝ} (c : ℝ) (cs : ConvergesTo s a) :
     ConvergesTo (fun n ↦ c * s n) (c * a) := by
@@ -128,4 +128,3 @@ theorem convergesTo_unique {s : ℕ → ℝ} {a b : ℝ}
     _ = |a - b| := by norm_num [ε]
 
   exact lt_irrefl _ this
-
