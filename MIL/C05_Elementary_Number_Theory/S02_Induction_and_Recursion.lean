@@ -8,7 +8,7 @@ example (n : Nat) : n.succ ≠ Nat.zero :=
 example (m n : Nat) (h : m.succ = n.succ) : m = n :=
   Nat.succ.inj h
 
-def fac : ℕ → ℕ
+def fac : ℕ → ℕ -- factorial function
   | 0 => 1
   | n + 1 => (n + 1) * fac n
 
@@ -49,7 +49,14 @@ theorem dvd_fac {i n : ℕ} (ipos : 0 < i) (ile : i ≤ n) : i ∣ fac n := by
 theorem pow_two_le_fac (n : ℕ) : 2 ^ (n - 1) ≤ fac n := by
   rcases n with _ | n
   · simp [fac]
-  sorry
+  induction' n with n ih
+  · norm_num
+    simp [fac]
+  · simp
+    rw [pow_succ']
+    rw [fac]
+    apply Nat.mul_le_mul _ ih
+    apply Nat.le_add_left
 section
 
 variable {α : Type*} (s : Finset ℕ) (f : ℕ → ℕ) (n : ℕ)
@@ -87,7 +94,10 @@ example (f : ℕ → ℕ) (n : ℕ) : ∏ x in range n.succ, f x = (∏ x in ran
 example (n : ℕ) : fac n = ∏ i in range n, (i + 1) := by
   induction' n with n ih
   · rw [fac, prod_range_zero]
-  rw [fac, ih, prod_range_succ, mul_comm]
+  rw [fac]
+  rw [ih]
+  rw [prod_range_succ]
+  rw [mul_comm]
 
 example (a b c d e f : ℕ) : a * (b * c * f * (d * e)) = d * (a * f * e) * (c * b) := by
   simp [mul_assoc, mul_comm, mul_left_comm]
@@ -100,7 +110,13 @@ theorem sum_id (n : ℕ) : ∑ i in range (n + 1), i = n * (n + 1) / 2 := by
   ring
 
 theorem sum_sqr (n : ℕ) : ∑ i in range (n + 1), i ^ 2 = n * (n + 1) * (2 * n + 1) / 6 := by
-  sorry
+  symm; apply Nat.div_eq_of_eq_mul_right (by norm_num : 0 < 6)
+  induction' n with n ih
+  · simp
+  · rw [Finset.sum_range_succ]
+    rw [mul_add 6] -- 分配律拆出来用于化简
+    rw [← ih]
+    ring
 end
 
 inductive MyNat
@@ -135,13 +151,45 @@ theorem add_comm (m n : MyNat) : add m n = add n m := by
   rw [add, succ_add, ih]
 
 theorem add_assoc (m n k : MyNat) : add (add m n) k = add m (add n k) := by
-  sorry
+  induction' m with m ih
+  · rw [zero_add]
+    symm
+    rw [zero_add]
+  · rw [succ_add, succ_add, succ_add, ih]
 theorem mul_add (m n k : MyNat) : mul m (add n k) = add (mul m n) (mul m k) := by
-  sorry
+  induction' k with k ih
+  · rfl
+  · rw [add]
+    rw [mul]
+    rw [mul]
+    rw [ih]
+    rw [add_assoc]
+
+
 theorem zero_mul (n : MyNat) : mul zero n = zero := by
-  sorry
+  induction' n with n ih
+  · rfl
+  · rw [mul]
+    rw [ih]
+    rfl
+
 theorem succ_mul (m n : MyNat) : mul (succ m) n = add (mul m n) n := by
-  sorry
+  induction' n with n ih
+  · rfl
+  · rw [mul]
+    rw [mul]
+    rw [ih]
+    rw [add_assoc]
+    rw [add_assoc]
+    rw [add_comm n]
+    rw [succ_add]
+    rfl
+
 theorem mul_comm (m n : MyNat) : mul m n = mul n m := by
-  sorry
+  induction' n with n ih
+  · rw [zero_mul]
+    rfl
+  · rw [mul]
+    rw [succ_mul]
+    rw [ih]
 end MyNat
