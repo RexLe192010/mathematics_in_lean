@@ -289,16 +289,40 @@ example : range exp = { y | y > 0 } := by
   rw [exp_log ypos]
 
 example : InjOn sqrt { x | x ≥ 0 } := by
-  sorry
+  intro x₁ hx₁ x₂ hx₂
+  intro e
+  exact (sqrt_inj hx₁ hx₂).mp e
 
 example : InjOn (fun x ↦ x ^ 2) { x : ℝ | x ≥ 0 } := by
-  sorry
+  intro x hx y hy
+  intro e
+  calc
+    x = sqrt (x ^ 2) := by exact (sqrt_sq hx).symm
+    _ = sqrt (y ^ 2) := by exact congrArg sqrt e
+    _ = y := by exact sqrt_sq hy
+
 
 example : sqrt '' { x | x ≥ 0 } = { y | y ≥ 0 } := by
-  sorry
+  ext y; constructor
+  · rintro ⟨x, hx, e⟩
+    rw [← e]
+    simp
+    exact sqrt_nonneg x
+  · intro hy
+    simp
+    use y ^ 2
+    constructor
+    · exact sq_nonneg y
+    · exact sqrt_sq hy
+
 
 example : (range fun x ↦ x ^ 2) = { y : ℝ | y ≥ 0 } := by
-  sorry
+  ext y; constructor
+  · rintro ⟨x, rfl⟩
+    exact sq_nonneg x
+  intro hy
+  use sqrt y
+  exact sq_sqrt hy
 
 end
 
@@ -329,11 +353,29 @@ variable (f : α → β)
 
 open Function
 
-example : Injective f ↔ LeftInverse (inverse f) f :=
-  sorry
+example : Injective f ↔ LeftInverse (inverse f) f := by
+  constructor
+  · intro h
+    intro x
+    apply h
+    apply inverse_spec
+    use x
+  · intro h
+    intro x x'
+    intro e
+    rw [← h x, ← h x']
+    rw [e]
 
-example : Surjective f ↔ RightInverse (inverse f) f :=
-  sorry
+example : Surjective f ↔ RightInverse (inverse f) f := by
+  constructor
+  · intro h
+    intro y
+    apply inverse_spec
+    exact h y
+  · intro h
+    intro y
+    rw [← h y]
+    exact exists_apply_eq_apply (fun a ↦ f a) (inverse f y)
 
 end
 
@@ -350,9 +392,10 @@ theorem Cantor : ∀ f : α → Set α, ¬Surjective f := by
     have : j ∉ f j := by rwa [h] at h'
     contradiction
   have h₂ : j ∈ S
-  sorry
-  have h₃ : j ∉ S
-  sorry
+  exact h₁
+  have h₃ : j ∉ S := by
+    rw [← h]
+    exact h₂
   contradiction
 
 -- COMMENTS: TODO: improve this
