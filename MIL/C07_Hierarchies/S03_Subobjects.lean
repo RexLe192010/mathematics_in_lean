@@ -69,7 +69,16 @@ def Submonoid.Setoid [CommMonoid M] (N : Submonoid M) : Setoid M  where
     refl := fun x ↦ ⟨1, N.one_mem, 1, N.one_mem, rfl⟩
     symm := fun ⟨w, hw, z, hz, h⟩ ↦ ⟨z, hz, w, hw, h.symm⟩
     trans := by
-      sorry
+      rintro a b c ⟨w, hw, z, hz, h⟩ ⟨w', hw', z', hz', h'⟩
+      refine ⟨w*w', N.mul_mem hw hw', z*z', N.mul_mem hz hz', ?_⟩
+      rw [← mul_assoc]
+      rw [← mul_assoc]
+      rw [h]
+      rw [mul_comm b]
+      rw [mul_comm c]
+      rw [mul_assoc]
+      rw [mul_assoc]
+      exact congrArg (HMul.hMul z) h'
   }
 
 instance [CommMonoid M] : HasQuotient M (Submonoid M) where
@@ -79,12 +88,39 @@ def QuotientMonoid.mk [CommMonoid M] (N : Submonoid M) : M → M ⧸ N := Quotie
 
 instance [CommMonoid M] (N : Submonoid M) : Monoid (M ⧸ N) where
   mul := Quotient.map₂' (· * ·) (by
-      sorry
+    rintro a₁ b₁ ⟨w, hw, z, hz, ha⟩ a₂ b₂ ⟨w', hw', z', hz', hb⟩
+    refine ⟨w*w', N.mul_mem hw hw', z*z', N.mul_mem hz hz', ?_⟩
+    simp
+    rw [mul_comm w]
+    rw [← mul_assoc]
+    rw [mul_assoc a₁]
+    rw [hb]
+    rw [mul_comm a₁]
+    rw [mul_assoc]
+    rw [ha]
+    rw [← mul_assoc]
+    symm
+    rw [mul_comm z]
+    rw [← mul_assoc]
+    rw [mul_assoc b₁]
+    rw [mul_comm b₁]
         )
   mul_assoc := by
-      sorry
+      rintro ⟨a⟩ ⟨b⟩ ⟨c⟩
+      apply Quotient.sound
+      dsimp only
+      rw [mul_assoc]
+      apply @Setoid.refl _ N.Setoid
   one := QuotientMonoid.mk N 1
-  one_mul := by
-      sorry
+  one_mul := by -- we can observe that the proof for the latter two will mimic the one for mul_assoc
+      rintro ⟨a⟩
+      apply Quotient.sound
+      dsimp only
+      rw [one_mul]
+      apply @Setoid.refl _ N.Setoid
   mul_one := by
-      sorry
+      rintro ⟨a⟩
+      apply Quotient.sound
+      dsimp only
+      rw [mul_one]
+      apply @Setoid.refl _ N.Setoid

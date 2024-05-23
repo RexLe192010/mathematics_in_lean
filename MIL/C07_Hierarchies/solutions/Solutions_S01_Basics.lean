@@ -298,6 +298,8 @@ def zsmul₁ {M : Type*} [Zero M] [Add M] [Neg M] : ℤ → M → M
   | Int.negSucc n, a => -nsmul₁ n.succ a
 
 instance abGrpModule (A : Type) [AddCommGroup₃ A] : Module₁ ℤ A where
+-- If you insist on doing it then you will probably want to state and
+-- prove several intermediate lemmas about nsmul₁ and zsmul₁.
   smul := zsmul₁
   zero_smul := sorry
   one_smul := sorry

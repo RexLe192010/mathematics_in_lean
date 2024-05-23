@@ -97,7 +97,7 @@ instance (M N : Type) [Monoid M] [Monoid N] : MonoidHomClass₃ (MonoidHom₁ M 
 
 
 @[ext]
-structure OrderPresHom (α β : Type) [LE α] [LE β] where
+structure OrderPresHom (α β : Type) [LE α] [LE β] where -- order preserved
   toFun : α → β
   le_of_le : ∀ a a', a ≤ a' → toFun a ≤ toFun a'
 
