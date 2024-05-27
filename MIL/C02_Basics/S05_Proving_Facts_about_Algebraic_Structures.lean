@@ -42,7 +42,7 @@ example : x ⊓ y = y ⊓ x := by
     apply inf_le_right
     apply inf_le_left
 
-example : x ⊓ y ⊓ z = x ⊓ (y ⊓ z) := by -- 写得比较丑，建议看solution
+example : x ⊓ y ⊓ z = x ⊓ (y ⊓ z) := by
   apply le_antisymm
   · apply le_inf
     · apply le_trans
