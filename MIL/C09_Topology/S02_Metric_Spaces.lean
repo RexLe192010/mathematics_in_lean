@@ -190,18 +190,53 @@ example [CompleteSpace X] (f : ℕ → Set X) (ho : ∀ n, IsOpen (f n)) (hd : �
       fun n p ↦ Prod.mk (center n p.1 p.2) (radius n p.1 p.2)
   let c : ℕ → X := fun n ↦ (F n).1
   let r : ℕ → ℝ := fun n ↦ (F n).2
-  have rpos : ∀ n, 0 < r n := by sorry
-  have rB : ∀ n, r n ≤ B n := by sorry
-  have incl : ∀ n, closedBall (c (n + 1)) (r (n + 1)) ⊆ closedBall (c n) (r n) ∩ f n := by
-    sorry
-  have cdist : ∀ n, dist (c n) (c (n + 1)) ≤ B n := by sorry
+  have rpos : ∀ n, 0 < r n := by
+    intro n
+    induction' n with n hn
+    exact lt_min εpos (Bpos 0)
+    exact Hpos n (c n) (r n) hn
+  have rB : ∀ n, r n ≤ B n := by
+    intro n
+    induction' n with n hn
+    exact min_le_right _ _
+    exact HB n (c n) (r n) (rpos n)
+  have incl : ∀ n, closedBall (c (n + 1)) (r (n + 1)) ⊆ closedBall (c n) (r n) ∩ f n :=
+    fun n ↦
+    Hball n (c n) (r n) (rpos n)
+  have cdist : ∀ n, dist (c n) (c (n + 1)) ≤ B n := by
+    intro n
+    rw [dist_comm]
+    have A : c (n + 1) ∈ closedBall (c (n + 1)) (r (n + 1)) :=
+      mem_closedBall_self (rpos <| n + 1).le
+    have I :=
+      calc
+        closedBall (c (n + 1)) (r (n + 1)) ⊆ closedBall (c n) (r n) :=
+          (incl n).trans (inter_subset_left _ _)
+        _ ⊆ closedBall (c n) (B n) := closedBall_subset_closedBall (rB n)
+
+    exact I A
   have : CauchySeq c := cauchySeq_of_le_geometric_two' cdist
   -- as the sequence `c n` is Cauchy in a complete space, it converges to a limit `y`.
   rcases cauchySeq_tendsto_of_complete this with ⟨y, ylim⟩
   -- this point `y` will be the desired point. We will check that it belongs to all
   -- `f n` and to `ball x ε`.
   use y
-  have I : ∀ n, ∀ m ≥ n, closedBall (c m) (r m) ⊆ closedBall (c n) (r n) := by sorry
-  have yball : ∀ n, y ∈ closedBall (c n) (r n) := by sorry
-  sorry
-
+  have I : ∀ n, ∀ m ≥ n, closedBall (c m) (r m) ⊆ closedBall (c n) (r n) := by
+    intro n
+    refine' Nat.le_induction _ fun m hnm h ↦ _
+    · exact Subset.rfl
+    · exact (incl m).trans ((Set.inter_subset_left _ _).trans h)
+  have yball : ∀ n, y ∈ closedBall (c n) (r n) := by
+    intro n
+    refine' isClosed_ball.mem_of_tendsto ylim _
+    refine' (Filter.eventually_ge_atTop n).mono fun m hm ↦ _
+    exact I n m hm (mem_closedBall_self (rpos _).le)
+  constructor
+  · suffices ∀ n, y ∈ f n by rwa [Set.mem_iInter]
+    intro n
+    have : closedBall (c (n + 1)) (r (n + 1)) ⊆ f n :=
+      Subset.trans (incl n) (inter_subset_right _ _)
+    exact this (yball (n + 1))
+  calc
+    dist y x ≤ r 0 := yball 0
+    _ ≤ ε := min_le_left _ _
