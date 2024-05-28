@@ -1,0 +1,70 @@
+{
+    "messages": [
+        {
+            "role": "system",
+            "content": "You are an AI assistant that translates natural language to Lean4. Output Lean 4 code only. Put sorry after \":=\"."
+        },
+        {
+            "role": "user",
+            "content": "Solve for x : x + 4 = 5."
+        },
+        {
+            "role": "assistant",
+            "content": "-- Equation x + 4 = 5\ndef solve_linear_equation_1 (a b : R) (h : a + 4 = 5) : a = 5 - 4 := sorry"
+        },
+        {
+            "role": "user",
+            "content": "Solve for y : 3y + 4 = -5."
+        },
+        {
+            "role": "assistant",
+            "content": "-- Equation 3y + 4 = -5\ndef solve_linear_equation_2 (c d : R) (h : 3 * c + 4 = -5) : 3 * c = -5 - 4 := sorry"
+        },
+        {
+            "role": "user",
+            "content": "Solve for z : 7z − 2 = 5z + 10"
+        },
+        {
+            "role": "assistant",
+            "content": "-- Equation 7z − 2 = 5z + 10\ndef solve_linear_equation_3 (e f : R) (h : 7 * e − 2 = 5 * e + 10) : 7 * e - 5 * e = 10 + 2 := sorry"
+        },
+        {
+            "role": "user",
+            "content": "EXAMPLE 3-2 Solve the equation 3x + 5 = 11 + x for x.\nSolution: First, subtract 5 from both sides to get\n3x = 6 + x.\nNow subtract x from both sides to get\n2x = 6.\nFinally, divide by the coefficient, 2, of x to get\nx = 3.\nThis gives the solution to our equation. It's a good idea to check the answer once you have \nsolved an equation. To do this, just substitute 3 for x in the equation and make sure it works: \n3(3) + 5 = 14 = 11+3, so our answer is correct."
+        },
+        {
+            "role": "assistant",
+            "content": "-- Equation 3x + 5 = 11 + x\ndef solve_linear_equation_4 (x : R) : x = 3 :=\nbegin\n  have h1 : 3 * x + 5 = 11 + x,\n  have h2 : 3 * x = 6 + x := sorry,\n  have h3 : 2 * x = 6 := sorry,\n  exact (div_eq_of_eq_mul_left (by norm_num : (2 : R) ≠ 0) h3).symm,\nend\n-- Checking the solution by substituting x = 3 into the original equation\n#reduce 3 * 3 + 5\n#reduce 11 + 3"
+        },
+        {
+            "role": "user",
+            "content": "EXAMPLE 3-3 Solve the equation ax + b = c for x, where a, b, and c are constants.\nSolution: Remember that a, b, and c are just constants here, even though they are letters. Our \nfirst step is to subtract b from both sides to get\nax = c-b;\nthen we divide by a to get x = (c - b) / a"
+        },
+        {
+            "role": "assistant",
+            "content": "-- Equation ax + b = c\ndef solve_linear_equation_5 (a b c : R) (ha : a ≠ 0) : x = (c - b) / a :=\nbegin\n  have h1 : a * x + b = c,\n  have h2 : a * x = c - b := sorry,\n  exact (div_eq_of_eq_mul_left ha h2).symm,\nend"
+        },
+        {
+            "role": "user",
+            "content": "EXAMPLE 3-4 Solve for y:\n(1 + y) / y = 3\nSolution: Although this isn't linear, we can make it so my multiplying both sides of the equation \nby y, getting\n1 + y = 3y.\nCollecting y terms on one side yields 2y = 1, so dividing by 2 yields y = 1/2."
+        },
+        {
+            "role": "assistant",
+            "content": "-- Equation (1 + y) / y = 3\ndef solve_nonlinear_equation_1 (y : R) (hy : y ≠ 0) : y = 1 / 2 :=\nbegin\n  have h1 : (1 + y) / y = 3,\n  have h2 : 1 + y = 3 * y := sorry,\n  have h3 : 2 * y = 1 := sorry,\n  exact (div_eq_of_eq_mul_left (by norm_num : (2 : R) ≠ 0) h3).symm,\nend"
+        },
+        {
+            "role": "user",
+            "content": "-- Equation 3x + 5 = 11 + x\ndef solve_linear_equation_4 (x : R) : x = 3 :=\nbegin\n  have h1 : 3 * x + 5 = 11 + x,\n  have h2 : 3 * x = 6 + x := sorry,\n  have h3 : 2 * x = 6 := sorry,\n  exact (div_eq_of_eq_mul_left (by norm_num : (2 : R) ≠ 0) h3).symm,\nend\n-- Checking the solution by substituting x = 3 into the original equation\n#reduce 3 * 3 + 5\n#reduce 11 + 3\n\n\n\n-- Equation ax + b = c\ndef solve_linear_equation_5 (a b c : R) (ha : a ≠ 0) : x = (c - b) / a :=\nbegin\n  have h1 : a * x + b = c,\n  have h2 : a * x = c - b := sorry,\n  exact (div_eq_of_eq_mul_left ha h2).symm,\nend\n\n\n-- Equation (1 + y) / y = 3\ndef solve_nonlinear_equation_1 (y : R) (hy : y ≠ 0) : y = 1 / 2 :=\nbegin\n  have h1 : (1 + y) / y = 3,\n  have h2 : 1 + y = 3 * y := sorry,\n  have h3 : 2 * y = 1 := sorry,\n  exact (div_eq_of_eq_mul_left (by norm_num : (2 : R) ≠ 0) h3).symm,\nend\nGiven this library, solve for y: 3y + 2 = y - 3 + 4 y."
+        },
+        {
+            "role": "assistant",
+            "content": "-- Equation 3y + 2 = y - 3 + 4y\ndef solve_linear_equation_6 (y : R) : y = -5 :=\nbegin\n  have h1 : 3 * y + 2 = y - 3 + 4 * y,\n  have h2 : 3 * y + 2 = 5 * y - 3 := sorry,\n  have h3 : 2 * y = -5 := sorry,\n  exact (div_eq_of_eq_mul_left (by norm_num : (2 : R) ≠ 0) h3).symm,\nend"
+        }
+    ],
+    "temperature": 0.7,
+    "top_p": 0.95,
+    "frequency_penalty": 0,
+    "presence_penalty": 0,
+    "max_tokens": 800,
+    "stop": null
+}
