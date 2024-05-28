@@ -1,7 +1,7 @@
 # Some notes on newly-added folder
 
 This is a tutorial for Lean 4, and I forked it not only for studying Lean 4 but also for testing GPT4's auto-formalization and resoning skills.
-The "manual_testing" folder is created by me to perform the research.
+The "manual_testing" folder is created to perform the research.
 
 # Mathematics in Lean
 
